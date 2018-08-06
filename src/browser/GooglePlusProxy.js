@@ -1,5 +1,6 @@
 var __googleSdkReady = false;
 var __googleCallbacks = [];
+var __google_server_auth_code = null;
 
 var GooglePlusProxy = {
 
@@ -30,7 +31,7 @@ var GooglePlusProxy = {
                     "expires": authResponse['expires_at'],
                     "expires_in": authResponse['expires_in'],
                     "idToken": authResponse['id_token'],
-                    "serverAuthCode": authResponse['server_auth_code'],
+                    "serverAuthCode": __google_server_auth_code,
                     "email": profile.getEmail(),
                     "userId": profile.getId(),
                     "displayName": profile.getName(),
@@ -63,11 +64,26 @@ var GooglePlusProxy = {
             });
         }
 
-        gapi.auth2.getAuthInstance().signIn(options).then(function () {
-            GooglePlusProxy.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get(), success, error);
-        }, function(err) {
-            error(err);
-        });
+        options = options[0]
+        if (options.offline)
+        {
+            gapi.auth2.getAuthInstance().grantOfflineAccess({scope : options.scopes}).then(function (resp) {
+                __google_server_auth_code = resp.code;
+                setTimeout(
+                    that.GooglePlus.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get(), success, error)
+                , 0)
+            }, function(err) {
+                error(err);
+            });
+        }
+        else
+        {
+            gapi.auth2.getAuthInstance().signIn({scope : options.scopes}).then(function () {
+                GooglePlusProxy.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get(), success, error);
+            }, function(err) {
+                error(err);
+            });
+        }
     },
 
     logout: function (success, error) {
@@ -132,7 +148,7 @@ if (window.location.protocol === "file:") {
         js = d.createElement(s); js.id = id;
         js.onload = function () { window.handleClientLoad(); };
         js.onreadystatechange = function () { if (this.readyState === 'complete') js.onload(); };
-        js.src = "https://apis.google.com/js/api.js";
+        js.src = "https://apis.google.com/js/platform.js";
         fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'googleplus-jssdk'));
 }
