@@ -60,7 +60,7 @@ var GooglePlusProxy = {
         var that = this;
         if (!__googleSdkReady) {
             return __googleCallbacks.push(function() {
-                that.login(success, error, options);
+                GooglePlusProxy.login(success, error, options);
             });
         }
 
@@ -70,7 +70,7 @@ var GooglePlusProxy = {
             gapi.auth2.getAuthInstance().grantOfflineAccess({scope : options.scopes}).then(function (resp) {
                 __google_server_auth_code = resp.code;
                 setTimeout(
-                    that.GooglePlus.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get(), success, error)
+                    GooglePlusProxy.updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get(), success, error)
                 , 0)
             }, function(err) {
                 error(err);
