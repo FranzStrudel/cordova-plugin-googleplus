@@ -57,7 +57,6 @@ var GooglePlusProxy = {
     },
 
     login: function (success, error, options) {
-        var that = this;
         if (!__googleSdkReady) {
             return __googleCallbacks.push(function() {
                 GooglePlusProxy.login(success, error, options);
